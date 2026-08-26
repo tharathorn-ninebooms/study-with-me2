@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkMate Pro - Co-Working & Pomodoro Ecosystem</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full text-slate-800 dark:text-slate-100 dark:bg-slate-900 flex flex-col transition-colors duration-200">
+
+    <!-- Navbar -->
+    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md shadow-brand-500/20">
+                        ⚡
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg text-slate-900 dark:text-white block leading-tight">WorkMate Pro</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-400">Co-Working & Focus Hub</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
+                    <button onclick="switchTab('focus')" id="tab-btn-focus" class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                        <i class="fa-solid me-1 fa-clock"></i> โหมดโฟกัส & งาน
+                    </button>
+                    <button onclick="switchTab('match')" id="tab-btn-match" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                        <i class="fa-solid me-1 fa-user-group"></i> ค้นหาเพื่อนทำงาน
+                    </button>
+                    <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                        <i class="fa-solid me-1 fa-chart-pie"></i> สถิติ & สรุปผล
+                    </button>
+                </nav>
+
+                <!-- Actions -->
+                <div class="flex items-center space-x-3">
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+                        <i id="darkModeIcon" class="fa-solid fa-moon"></i>
+                    </button>
+                    <button onclick="openModal('profileModal')" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition flex items-center">
+                        <i class="fa-solid fa-plus me-2"></i> สร้างโปรไฟล์
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Nav Bar -->
+        <div class="md:hidden flex border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+            <button onclick="switchTab('focus')" class="flex-1 py-3 text-center text-xs font-semibold border-b-2 border-brand-600 text-brand-600">โฟกัส</button>
+            <button onclick="switchTab('match')" class="flex-1 py-3 text-center text-xs font-semibold text-slate-500">หาเพื่อน</button>
+            <button onclick="switchTab('dashboard')" class="flex-1 py-3 text-center text-xs font-semibold text-slate-500">สถิติ</button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: POMODORO & TASK HUB -->
+        <section id="tab-focus" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Pomodoro Timer Box -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <!-- Timer Header Mode Switcher -->
+                        <div class="flex justify-center space-x-2 mb-8 bg-slate-100 dark:bg-slate-700/50 p-1.5 rounded-xl max-w-md mx-auto">
+                            <button onclick="setTimerMode('work')" id="mode-work" class="mode-btn flex-1 py-2 rounded-lg text-sm font-medium transition bg-white dark:bg-slate-600 shadow-sm text-brand-600 dark:text-white">🎯 โฟกัส (25m)</button>
+                            <button onclick="setTimerMode('shortBreak')" id="mode-shortBreak" class="mode-btn flex-1 py-2 rounded-lg text-sm font-medium transition text-slate-600 dark:text-slate-300">☕ พักสั้น (5m)</button>
+                            <button onclick="setTimerMode('longBreak')" id="mode-longBreak" class="mode-btn flex-1 py-2 rounded-lg text-sm font-medium transition text-slate-600 dark:text-slate-300">🌴 พักยาว (15m)</button>
+                        </div>
+
+                        <!-- Big Clock Display -->
+                        <div class="text-center my-6">
+                            <div id="timerDisplay" class="text-7xl sm:text-8xl font-mono font-extrabold tracking-tight text-slate-900 dark:text-white select-none">
+                                25:00
+                            </div>
+                            <p id="currentTaskLabel" class="text-sm text-slate-500 dark:text-slate-400 mt-4 font-medium">
+                                📌 กำลังโฟกัส: <span id="activeTaskName" class="text-slate-800 dark:text-slate-200 font-bold">เลือกรายการงานด้านข้าง</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Timer Controls -->
+                    <div class="flex justify-center items-center space-x-4 mt-8">
+                        <button id="mainTimerBtn" onclick="toggleTimer()" class="w-40 py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold text-lg rounded-2xl shadow-lg shadow-brand-500/30 transition transform active:scale-95">
+                            เริ่มทำงาน
+                        </button>
+                        <button onclick="resetTimer()" class="p-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-2xl transition">
+                            <i class="fa-solid fa-rotate-right text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Task List Side Panel -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col h-[500px]">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg flex items-center">
+                            <i class="fa-solid fa-list-check text-brand-500 me-2"></i> รายการงานวันนี้
+                        </h3>
+                        <span id="taskCounter" class="text-xs bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300 px-2.5 py-1 rounded-full font-bold">0/0</span>
+                    </div>
+
+                    <!-- Input Task -->
+                    <form id="addTaskForm" class="flex gap-2 mb-4">
+                        <input type="text" id="taskInput" placeholder="เพิ่มเป้าหมายงานใหม่..." required class="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button type="submit" class="bg-brand-600 text-white px-3 py-2 rounded-xl text-sm font-semibold hover:bg-brand-700 transition">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </form>
+
+                    <!-- Scrollable Task Items -->
+                    <div id="taskList" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: WORKMATE MATCHER -->
+        <section id="tab-match" class="tab-content hidden">
+            <!-- Filter & Search Bar -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400"></i>
+                        <input type="text" id="searchInput" oninput="filterPartners()" placeholder="ค้นหาชื่อ, สถานที่ หรือคีย์เวิร์ด..." class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <select id="roleFilter" onchange="filterPartners()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="ALL">ทุกสายงาน (All Roles)</option>
+                            <option value="Developer">Software Developer / Tech</option>
+                            <option value="Designer">UI/UX & Graphic Designer</option>
+                            <option value="Content">Content Creator / Marketing</option>
+                            <option value="Student">นักเรียน / นักศึกษา</option>
+                            <option value="Freelancer">ฟรีแลนซ์ทั่วไป</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="modeFilter" onchange="filterPartners()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="ALL">รูปแบบทั้งหมด (Online & On-site)</option>
+                            <option value="Online">Online (Discord / Zoom)</option>
+                            <option value="On-site">On-site (เจอกันตามคาเฟ่/Co-Working)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Partner Cards Grid -->
+            <div id="partnerGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Partner Cards Rendered Here -->
+            </div>
+        </section>
+
+        <!-- TAB 3: DASHBOARD & STATS -->
+        <section id="tab-dashboard" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 text-sm font-medium">โฟกัสสะสมวันนี้</span>
+                        <div class="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center text-brand-600">
+                            <i class="fa-solid fa-stopwatch text-lg"></i>
+                        </div>
+                    </div>
+                    <div id="statTotalMinutes" class="text-3xl font-extrabold mt-4">0 นาที</div>
+                    <span class="text-xs text-emerald-500 font-medium mt-1 inline-block">↑ เพิ่มขึ้นเรื่อยๆ ตามรอบที่ทำสำเร็จ</span>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 text-sm font-medium">รอบ Pomodoro ที่สำเร็จ</span>
+                        <div class="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center text-emerald-600">
+                            <i class="fa-solid fa-circle-check text-lg"></i>
+                        </div>
+                    </div>
+                    <div id="statCompletedSessions" class="text-3xl font-extrabold mt-4">0 รอบ</div>
+                    <span class="text-xs text-slate-400 mt-1 inline-block">เป้าหมายมาตรฐาน: 8 รอบ/วัน</span>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 text-sm font-medium">อัตรางานสำเร็จ (Task Ratio)</span>
+                        <div class="w-10 h-10 bg-amber-50 dark:bg-amber-900/50 rounded-xl flex items-center justify-center text-amber-600">
+                            <i class="fa-solid fa-chart-line text-lg"></i>
+                        </div>
+                    </div>
+                    <div id="statTaskRatio" class="text-3xl font-extrabold mt-4">0%</div>
+                    <span class="text-xs text-slate-400 mt-1 inline-block">คำนวณจาก Task List ที่เช็กเสร็จ</span>
+                </div>
+            </div>
+
+            <!-- Productivity Tips -->
+            <div class="bg-gradient-to-r from-brand-600 to-indigo-700 text-white rounded-2xl p-6 shadow-md">
+                <h3 class="font-bold text-lg mb-2 flex items-center">
+                    <i class="fa-solid fa-lightbulb me-2 text-yellow-300"></i> เทคนิคเพิ่ม Productivity ด้วย WorkMate
+                </h3>
+                <ul class="text-sm space-y-2 text-indigo-100 list-disc list-inside">
+                    <li>ใช้นาฬิกา Pomodoro 25 นาที โดยห้ามเปิดโซเชียลมีเดียเลยในระหว่างรอบ</li>
+                    <li>หาเพื่อนทำงานที่มีสไตล์ <strong>Silent Mode</strong> หากคุณต้องการสมาธิขั้นสูง</li>
+                    <li>พิมพ์ส่งเป้าหมาย 3 ข้อแรกที่คุณจะทำในรอบนี้ให้เพื่อนในแชตเพื่อสร้าง Accountability</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: Registration / Add Profile -->
+    <div id="profileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">ลงทะเบียนหาเพื่อนทำงาน</h3>
+                <button onclick="closeModal('profileModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="profileForm" onsubmit="handleCreateProfile(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">ชื่อ / นามนามแฝง *</label>
+                    <input type="text" id="profName" required placeholder="เช่น Alex_Dev, เมย์ สายดีไซน์" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">สายงาน *</label>
+                        <select id="profRole" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                            <option value="Developer">Developer / Tech</option>
+                            <option value="Designer">Designer / UI UX</option>
+                            <option value="Content">Content / Marketing</option>
+                            <option value="Student">นักเรียน / นักศึกษา</option>
+                            <option value="Freelancer">ฟรีแลนซ์ทั่วไป</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">รูปแบบการทำงาน *</label>
+                        <select id="profWorkStyle" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                            <option value="Online">Online (Discord/Zoom)</option>
+                            <option value="On-site">On-site (ร้านกาแฟ/Co-Working)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">สถานที่ประจำ หรือ ลิงก์ห้องทำงาน *</label>
+                    <input type="text" id="profLocation" required placeholder="เช่น Starbucks สามย่าน มิตรทาวน์ / Discord: WorkHub#123" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">ช่องทางติดต่อหลัก (Line ID / IG / Discord) *</label>
+                    <input type="text" id="profContact" required placeholder="เช่น Line: @alex_work / IG: alex.code" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">แนะนำตัวเอง & สไตล์การทำงาน</label>
+                    <textarea id="profBio" rows="3" placeholder="เช่น เน้นเปิดกล้องนั่งเงียบๆ ต่างคนต่างทำ หรือชอบคุยแลกเปลี่ยนไอเดียช่วงพัก 5 นาที..." class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-500 outline-none"></textarea>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-md transition">
+                        บันทึกและสร้างโปรไฟล์
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Script Engine -->
+    <script>
+        /* --------------------------------------------------
+         *  GLOBAL STATE & LOCALSTORAGE ENGINE
+         * -------------------------------------------------- */
+        const STORAGE_KEY = 'WORKMATE_PRO_DATA_V2';
+
+        let appData = {
+            pomodoro: {
+                workTime: 25 * 60,
+                shortBreakTime: 5 * 60,
+                longBreakTime: 15 * 60,
+                mode: 'work', // work, shortBreak, longBreak
+                timeLeft: 25 * 60,
+                isRunning: false,
+                activeTaskId: null
+            },
+            stats: {
+                totalSeconds: 0,
+                completedSessions: 0
+            },
+            tasks: [
+                { id: 't1', title: 'เขียนโครงสร้างโค้ดส่วนหน้าเว็บ', completed: true },
+                { id: 't2', title: 'ออกแบบส่วนระบบ Pomodoro', completed: false }
+            ],
+            partners: [
+                { id: 'p1', name: 'ภานุวัฒน์ (Tech Lead)', role: 'Developer', workStyle: 'Online', location: 'Discord Room: DevFocus#01', contact: 'Line: @panu_dev', bio: 'สายโค้ดดิ้งกลางคืนครับ นั่งทำเงียบๆ คุยแลกเปลี่ยนสถาปัตยกรรมซอฟต์แวร์ได้ช่วงพัก' },
+                { id: 'p2', name: 'มุกมณี (UI Designer)', role: 'Designer', workStyle: 'On-site', location: 'คาเฟ่ย่านอารีย์ / สะพานควาย', contact: 'IG: mook_design', bio: 'หาเพื่อนเปิดคอมนั่งทำงานออกแบบ Figma อยากได้เพื่อนช่วยสะกิดเวลาแอบอู้' },
+                { id: 'p3', name: 'เติ้ล (Content Creator)', role: 'Content', workStyle: 'Online', location: 'Google Meet', contact: 'FB: Tle Creator', bio: 'เขียนบทความและตัดต่อคลิป Reels หาเพื่อนเปิดกล้องทำงานร่วมกันแบบ Pomodoro' }
+            ]
+        };
+
+        let timerInterval = null;
+
+        // Init Engine
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            renderTasks();
+            renderPartners();
+            updateStatsDisplay();
+            updateTimerDisplay();
+        });
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    appData = { ...appData, ...parsed };
+                } catch (e) {
+                    console.error("State parse error", e);
+                }
+            }
+        }
+
+        /* --------------------------------------------------
+         *  POMODORO & AUDIO ENGINE
+         * -------------------------------------------------- */
+        function setTimerMode(mode) {
+            if (appData.pomodoro.isRunning) pauseTimer();
+            
+            appData.pomodoro.mode = mode;
+            if (mode === 'work') appData.pomodoro.timeLeft = appData.pomodoro.workTime;
+            if (mode === 'shortBreak') appData.pomodoro.timeLeft = appData.pomodoro.shortBreakTime;
+            if (mode === 'longBreak') appData.pomodoro.timeLeft = appData.pomodoro.longBreakTime;
+
+            // UI Tab active updates
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.className = "mode-btn flex-1 py-2 rounded-lg text-sm font-medium transition text-slate-600 dark:text-slate-300";
+            });
+            const activeBtn = document.getElementById(`mode-${mode}`);
+            activeBtn.className = "mode-btn flex-1 py-2 rounded-lg text-sm font-medium transition bg-white dark:bg-slate-600 shadow-sm text-brand-600 dark:text-white font-bold";
+
+            updateTimerDisplay();
+        }
+
+        function toggleTimer() {
+            if (appData.pomodoro.isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            appData.pomodoro.isRunning = true;
+            document.getElementById('mainTimerBtn').innerText = "พักชั่วคราว";
+            document.getElementById('mainTimerBtn').className = "w-40 py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-amber-500/30 transition transform active:scale-95";
+
+            timerInterval = setInterval(() => {
+                if (appData.pomodoro.timeLeft > 0) {
+                    appData.pomodoro.timeLeft--;
+                    if (appData.pomodoro.mode === 'work') {
+                        appData.stats.totalSeconds++;
+                    }
+                    updateTimerDisplay();
+                    saveState();
+                } else {
+                    onTimerComplete();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            appData.pomodoro.isRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById('mainTimerBtn').innerText = "ลุยงานต่อ";
+            document.getElementById('mainTimerBtn').className = "w-40 py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold text-lg rounded-2xl shadow-lg shadow-brand-500/30 transition transform active:scale-95";
+            saveState();
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            setTimerMode(appData.pomodoro.mode);
+            document.getElementById('mainTimerBtn').innerText = "เริ่มทำงาน";
+        }
+
+        function onTimerComplete() {
+            pauseTimer();
+            playAlertSound();
+
+            if (appData.pomodoro.mode === 'work') {
+                appData.stats.completedSessions++;
+                alert("🎉 ครอบรอบโฟกัส 25 นาทีเรียบร้อยแล้ว! ได้เวลาพักผ่อนแล้วครับ");
+                setTimerMode('shortBreak');
+            } else {
+                alert("💪 หมดเวลาพักแล้ว! พร้อมลุยรอบถัดไปหรือยัง?");
+                setTimerMode('work');
+            }
+            updateStatsDisplay();
+            saveState();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(appData.pomodoro.timeLeft / 60);
+            const seconds = appData.pomodoro.timeLeft % 60;
+            const formatted = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            document.getElementById('timerDisplay').innerText = formatted;
+            document.title = `${formatted} - WorkMate Pro`;
+        }
+
+        // Web Audio API Synthesizer (ไม่ต้องพึ่งไฟล์เสียงภายนอก)
+        function playAlertSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5 Tone
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3); // A5 Tone
+
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.8);
+            } catch (e) {
+                console.log("Audio play blocked");
+            }
+        }
+
+        /* --------------------------------------------------
+         *  TASK LIST ENGINE
+         * -------------------------------------------------- */
+        document.getElementById('addTaskForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('taskInput');
+            const title = input.value.trim();
+            if (!title) return;
+
+            const newTask = {
+                id: 't_' + Date.now(),
+                title: title,
+                completed: false
+            };
+
+            appData.tasks.unshift(newTask);
+            input.value = '';
+            renderTasks();
+            saveState();
+        });
+
+        function toggleTask(id) {
+            const task = appData.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                renderTasks();
+                updateStatsDisplay();
+                saveState();
+            }
+        }
+
+        function deleteTask(id) {
+            appData.tasks = appData.tasks.filter(t => t.id !== id);
+            if (appData.pomodoro.activeTaskId === id) {
+                appData.pomodoro.activeTaskId = null;
+                document.getElementById('activeTaskName').innerText = "เลือกรายการงานด้านข้าง";
+            }
+            renderTasks();
+            updateStatsDisplay();
+            saveState();
+        }
+
+        function selectActiveTask(id, name) {
+            appData.pomodoro.activeTaskId = id;
+            document.getElementById('activeTaskName').innerText = name;
+            renderTasks();
+            saveState();
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('taskList');
+            container.innerHTML = '';
+
+            const completedCount = appData.tasks.filter(t => t.completed).length;
+            document.getElementById('taskCounter').innerText = `${completedCount}/${appData.tasks.length}`;
+
+            if (appData.tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-slate-400 py-8 text-sm">
+                        ยังไม่มีเป้าหมายงานวันนี้<br>พิมพ์เพิ่มด้านบนได้เลย!
+                    </div>
+                `;
+                return;
+            }
+
+            appData.tasks.forEach(task => {
+                const isSelected = appData.pomodoro.activeTaskId === task.id;
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-xl border transition flex items-center justify-between gap-2 ${
+                    isSelected 
+                        ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-900/20' 
+                        : 'border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50'
+                }`;
+
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')" class="w-4 h-4 text-brand-600 rounded focus:ring-brand-500 cursor-pointer">
+                        <span class="text-sm truncate cursor-pointer ${task.completed ? 'line-through text-slate-400' : 'font-medium'}" onclick="selectActiveTask('${task.id}', '${task.title}')">
+                            ${task.title}
+                        </span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="selectActiveTask('${task.id}', '${task.title}')" class="p-1.5 text-xs text-brand-600 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-900/50 rounded-lg">
+                            🎯
+                        </button>
+                        <button onclick="deleteTask('${task.id}')" class="p-1.5 text-xs text-slate-400 hover:text-red-500 rounded-lg">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        /* --------------------------------------------------
+         *  PARTNER MATCHER ENGINE
+         * -------------------------------------------------- */
+        function handleCreateProfile(e) {
+            e.preventDefault();
+            const newPartner = {
+                id: 'p_' + Date.now(),
+                name: document.getElementById('profName').value.trim(),
+                role: document.getElementById('profRole').value,
+                workStyle: document.getElementById('profWorkStyle').value,
+                location: document.getElementById('profLocation').value.trim(),
+                contact: document.getElementById('profContact').value.trim(),
+                bio: document.getElementById('profBio').value.trim() || 'พร้อมตั้งใจทำงานร่วมกันครับ!'
+            };
+
+            appData.partners.unshift(newPartner);
+            renderPartners();
+            saveState();
+            closeModal('profileModal');
+            document.getElementById('profileForm').reset();
+            switchTab('match');
+        }
+
+        function filterPartners() {
+            renderPartners();
+        }
+
+        function renderPartners() {
+            const grid = document.getElementById('partnerGrid');
+            grid.innerHTML = '';
+
+            const searchKey = document.getElementById('searchInput').value.toLowerCase();
+            const roleKey = document.getElementById('roleFilter').value;
+            const modeKey = document.getElementById('modeFilter').value;
+
+            const filtered = appData.partners.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchKey) || 
+                                      p.location.toLowerCase().includes(searchKey) || 
+                                      p.bio.toLowerCase().includes(searchKey);
+                const matchesRole = roleKey === 'ALL' || p.role === roleKey;
+                const matchesMode = modeKey === 'ALL' || p.workStyle === modeKey;
+                return matchesSearch && matchesRole && matchesMode;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-user-slash text-4xl mb-3"></i>
+                        <p>ไม่พบคนที่ตรงกับเงื่อนไข ลองค้นหาด้วยคำอื่นนะครับ</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:shadow-md transition";
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-bold text-lg text-slate-900 dark:text-white">${p.name}</h4>
+                                <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 mt-1">
+                                    ${p.role}
+                                </span>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-md font-bold ${
+                                p.workStyle === 'Online' 
+                                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300' 
+                                    : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300'
+                            }">
+                                ${p.workStyle === 'Online' ? '🌐 Online' : '📍 On-site'}
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3 flex items-center">
+                            <i class="fa-solid fa-location-dot me-1.5 text-brand-500"></i> ${p.location}
+                        </p>
+
+                        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-3 bg-slate-50 dark:bg-slate-700/40 p-3 rounded-xl">
+                            "${p.bio}"
+                        </p>
+                    </div>
+
+                    <button onclick="connectPartner('${p.contact}')" class="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-brand-600 dark:hover:bg-brand-700 py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center">
+                        <i class="fa-solid fa-paper-plane me-2"></i> ส่งคำขอชวนทำงาน
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function connectPartner(contact) {
+            alert(`💬 ช่องทางการติดต่อเพื่อนคนนี้:\n\n${contact}\n\nสามารถทักไปชวนเปิดกล้อง หรือนัดเวลาทำงานได้เลย!`);
+        }
+
+        /* --------------------------------------------------
+         *  STATISTICS DASHBOARD
+         * -------------------------------------------------- */
+        function updateStatsDisplay() {
+            const minutes = Math.floor(appData.stats.totalSeconds / 60);
+            document.getElementById('statTotalMinutes').innerText = `${minutes} นาที`;
+            document.getElementById('statCompletedSessions').innerText = `${appData.stats.completedSessions} รอบ`;
+
+            const totalTasks = appData.tasks.length;
+            const completedTasks = appData.tasks.filter(t => t.completed).length;
+            const ratio = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            document.getElementById('statTaskRatio').innerText = `${ratio}%`;
+        }
+
+        /* --------------------------------------------------
+         *  UI NAVIGATION & UTILS
+         * -------------------------------------------------- */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-brand-600', 'dark:text-white');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-brand-600', 'dark:text-white');
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const icon = document.getElementById('darkModeIcon');
+            if (document.documentElement.classList.contains('dark')) {
+                icon.className = "fa-solid fa-sun text-yellow-400";
+            } else {
+                icon.className = "fa-solid fa-moon";
+            }
+        }
+    </script>
+</body>
+</html>
